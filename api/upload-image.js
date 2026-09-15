@@ -15,9 +15,13 @@ export default async function handler(req, res) {
     }
 
     const file = files[0];
-    const imageUrl = file.download_link;
 
-    if (!imageUrl || !imageUrl.startsWith("https://")) {
+    const imageSource =
+      typeof file === "object" && file.download_link
+        ? file.download_link
+        : null;
+
+    if (!imageSource || !imageSource.startsWith("https://")) {
       return res.status(400).json({
         error: "이미지 다운로드 주소를 찾지 못했습니다."
       });
@@ -25,7 +29,7 @@ export default async function handler(req, res) {
 
     const formData = new FormData();
 
-    formData.append("file", imageUrl);
+    formData.append("file", imageSource);
     formData.append(
       "upload_preset",
       process.env.CLOUDINARY_UPLOAD_PRESET
@@ -50,20 +54,23 @@ export default async function handler(req, res) {
 
     const imageUrl = result.secure_url;
 
-const downloadUrl = imageUrl.replace(
-  "/image/upload/",
-  "/image/upload/fl_attachment/"
-);
+    const downloadUrl = imageUrl.replace(
+      "/image/upload/",
+      "/image/upload/fl_attachment/"
+    );
 
-return res.status(200).json({
-  success: true,
-  image_url: imageUrl,
-  download_url: downloadUrl
-});
+    return res.status(200).json({
+      success: true,
+      image_url: imageUrl,
+      download_url: downloadUrl
+    });
 
   } catch (error) {
+    console.error(error);
+
     return res.status(500).json({
-      error: error.message
+      error: "서버 오류",
+      detail: error.message
     });
   }
 }
