@@ -48,10 +48,18 @@ export default async function handler(req, res) {
       });
     }
 
-    return res.status(200).json({
-      success: true,
-      image_url: result.secure_url
-    });
+    const imageUrl = result.secure_url;
+
+const downloadUrl = imageUrl.replace(
+  "/image/upload/",
+  "/image/upload/fl_attachment/"
+);
+
+return res.status(200).json({
+  success: true,
+  image_url: imageUrl,
+  download_url: downloadUrl
+});
 
   } catch (error) {
     return res.status(500).json({
